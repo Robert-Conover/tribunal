@@ -43,6 +43,7 @@ struct TribunalApp: App {
 private final class TribunalAppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         ensureTribunalAppIsActive()
+        applyTribunalAppIconIfAvailable()
     }
 }
 
@@ -50,6 +51,15 @@ private func ensureTribunalAppIsActive() {
     NSApp.setActivationPolicy(.regular)
     NSApp.activate(ignoringOtherApps: true)
     NSApp.windows.first?.makeKeyAndOrderFront(nil)
+}
+
+private func applyTribunalAppIconIfAvailable() {
+    guard let iconURL = Bundle.module.url(forResource: "AppIconDock", withExtension: "png"),
+          let iconImage = NSImage(contentsOf: iconURL) else {
+        return
+    }
+
+    NSApp.applicationIconImage = iconImage
 }
 
 extension Notification.Name {
