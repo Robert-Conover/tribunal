@@ -4,6 +4,7 @@ struct SettingsView: View {
     @EnvironmentObject private var settings: UserSettings
     @StateObject private var viewModel = SettingsViewModel()
     @State private var showWhyAPIKey = false
+    @FocusState private var isAPIKeyFocused: Bool
 
     var body: some View {
         ScrollView {
@@ -26,6 +27,7 @@ struct SettingsView: View {
                     HStack(spacing: 8) {
                         SecureField("sk-...", text: $viewModel.apiKeyInput)
                             .textFieldStyle(.roundedBorder)
+                            .focused($isAPIKeyFocused)
                             .frame(maxWidth: 400)
 
                         Button(viewModel.isValidating ? "Validating..." : "Save Key") {
@@ -129,6 +131,7 @@ struct SettingsView: View {
             if let key = settings.apiKey {
                 viewModel.apiKeyInput = key
             }
+            isAPIKeyFocused = true
         }
     }
 }

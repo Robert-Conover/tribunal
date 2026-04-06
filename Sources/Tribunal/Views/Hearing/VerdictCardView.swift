@@ -80,6 +80,13 @@ struct VerdictCardView: View {
                 HStack(spacing: 16) {
                     CopyButton(label: "Copy Analysis", text: formatFullAnalysis())
                     CopyButton(label: "Copy Verdict", text: formatVerdictSummary())
+                    ShareSheetButton(item: formatFullAnalysis()) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Share")
+                        }
+                        .font(.system(size: 12))
+                    }
                 }
                 .padding(.top, 8)
             }
