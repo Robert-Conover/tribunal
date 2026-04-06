@@ -1,10 +1,13 @@
 import SwiftUI
 
 enum TribunalTheme {
-    static let background = Color(red: 0.094, green: 0.094, blue: 0.106)       // #18181b
-    static let surface = Color(red: 0.067, green: 0.067, blue: 0.078)          // #111114
-    static let textPrimary = Color(red: 0.961, green: 0.961, blue: 0.961)      // #f5f5f5
-    static let textSecondary = Color(red: 0.961, green: 0.961, blue: 0.961).opacity(0.4)
+    // Adaptive colors — work in both dark and light mode
+    static let background = Color(nsColor: .windowBackgroundColor)
+    static let surface = Color(nsColor: .controlBackgroundColor)
+    static let textPrimary = Color(nsColor: .labelColor)
+    static let textSecondary = Color(nsColor: .secondaryLabelColor)
+
+    // Brand colors — same in both modes
     static let accent = Color(red: 0.831, green: 0.647, blue: 0.455)           // #d4a574
 
     static let verdictSupported = Color(red: 0.133, green: 0.773, blue: 0.369) // #22c55e

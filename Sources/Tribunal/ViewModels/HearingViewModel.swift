@@ -49,7 +49,8 @@ final class HearingViewModel: ObservableObject {
             let response = try ResponseParser.parse(accumulatedJSON)
             ResponseParser.applyToCase(response, case: newCase)
         } catch {
-            newCase.status = .failed
+            modelContext.delete(newCase)
+            self.currentCase = nil
             self.error = error.localizedDescription
         }
 
