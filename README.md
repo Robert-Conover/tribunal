@@ -50,7 +50,6 @@ Tribunal is in active development. The core hearing flow works end-to-end: input
 
 ## 🗺 Roadmap
 
-### v1 (current)
 - [x] Paste-and-analyze with streaming courtroom output
 - [x] Auto-saved case library with sidebar navigation
 - [x] Verdict with confidence scoring (High / Moderate / Low / Insufficient)
@@ -58,8 +57,6 @@ Tribunal is in active development. The core hearing flow works end-to-end: input
 - [x] OpenAI API integration with model selection (GPT-5.4-mini / GPT-5.4)
 - [x] Keychain-secured API key storage
 - [x] Dark and light mode
-
-### v1.5
 - [ ] URL content extraction — auto-fetch and parse articles from pasted links
 - [ ] Screenshot/image input via vision models
 - [ ] Follow-up questions after a verdict ("What if X?")
@@ -67,8 +64,6 @@ Tribunal is in active development. The core hearing flow works end-to-end: input
 - [ ] Source quality grading
 - [ ] Case search and filtering
 - [ ] PDF/Markdown export
-
-### Future
 - [ ] Side-by-side claim comparison
 - [ ] Claim tracking — re-analyze when new info emerges
 - [ ] Multi-provider support (Claude, Gemini, local models)
