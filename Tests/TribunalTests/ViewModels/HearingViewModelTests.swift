@@ -53,7 +53,7 @@ final class HearingViewModelTests: XCTestCase {
         await vm.startHearing(claim: "test", model: "gpt-5.4-mini", modelContext: context)
 
         XCTAssertNotNil(vm.error)
-        XCTAssertEqual(vm.currentCase?.status, .failed)
+        XCTAssertNil(vm.currentCase, "Failed cases should be deleted from SwiftData")
         XCTAssertFalse(vm.isStreaming)
     }
 
