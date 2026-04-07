@@ -1,8 +1,11 @@
 import SwiftUI
+import SwiftData
 
 struct SessionView: View {
     let hearingCase: Case
     @ObservedObject var viewModel: HearingViewModel
+    let onRetry: () -> Void
+    @Environment(\.modelContext) private var modelContext
 
     private var isLiveSession: Bool {
         viewModel.currentCase?.id == hearingCase.id
@@ -112,9 +115,6 @@ struct SessionView: View {
             if !hearingCase.rhetoricalAnalysis.isEmpty {
                 SectionView(section: .rhetoricalAnalysis, content: hearingCase.rhetoricalAnalysis, isActive: false)
             }
-            if !hearingCase.whatWouldChange.isEmpty {
-                SectionView(section: .whatWouldChange, content: hearingCase.whatWouldChange, isActive: false)
-            }
             if hearingCase.verdictJudgment != nil {
                 VerdictCardView(hearingCase: hearingCase)
             }
@@ -127,16 +127,58 @@ struct SessionView: View {
                 .font(.system(size: 32))
                 .foregroundStyle(TribunalTheme.verdictUnsupported)
 
-            Text(viewModel.error ?? "Hearing could not proceed — check your API key or connection.")
+            Text(primaryErrorMessage)
                 .font(.system(size: 14))
                 .foregroundStyle(TribunalTheme.textPrimary)
                 .multilineTextAlignment(.center)
 
-            Text("Try starting a new hearing with the same claim.")
+            Text(secondaryErrorMessage)
                 .font(.system(size: 12))
                 .foregroundStyle(TribunalTheme.textSecondary)
+                .multilineTextAlignment(.center)
+
+            Button("Retry Hearing") {
+                retryHearing()
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(TribunalTheme.accent)
         }
         .frame(maxWidth: .infinity)
         .padding(40)
+    }
+
+    private var primaryErrorMessage: String {
+        switch viewModel.failureKind {
+        case .missingAPIKey:
+            return "No API key configured. Add your OpenAI API key in Settings to continue."
+        case .invalidAPIKey:
+            return "Hearing could not proceed — your API key was rejected."
+        case .network:
+            return "No connection. Tribunal requires internet access to conduct hearings."
+        case .api:
+            return "Hearing could not proceed — OpenAI returned an API error."
+        case .unknown:
+            return viewModel.error ?? "Hearing could not proceed — check your API key or connection."
+        case nil:
+            return "Hearing could not proceed — check your API key or connection."
+        }
+    }
+
+    private var secondaryErrorMessage: String {
+        switch viewModel.failureKind {
+        case .missingAPIKey, .invalidAPIKey:
+            return "Update your API key in Settings, then retry this hearing."
+        case .network:
+            return "Reconnect to the internet, then try the same claim again."
+        case .api, .unknown, nil:
+            return "Try starting a new hearing with the same claim."
+        }
+    }
+
+    private func retryHearing() {
+        onRetry()
+        Task {
+            await viewModel.retryHearing(from: hearingCase, modelContext: modelContext)
+        }
     }
 }

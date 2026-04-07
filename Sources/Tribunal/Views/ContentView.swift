@@ -48,7 +48,14 @@ struct ContentView: View {
             if showSettings {
                 SettingsView()
             } else if let activeCase = displayedCase {
-                SessionView(hearingCase: activeCase, viewModel: hearingVM)
+                SessionView(
+                    hearingCase: activeCase,
+                    viewModel: hearingVM,
+                    onRetry: {
+                        showSettings = false
+                        selectedCaseID = nil
+                    }
+                )
             } else {
                 InputView { claim in
                     guard settings.apiKey != nil else {

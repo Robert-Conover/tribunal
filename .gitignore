@@ -3,7 +3,9 @@
 .DS_Store
 .build/
 .swiftpm/
+scripts/
 *.xcodeproj
 xcuserdata/
 DerivedData/
 docs/superpowers/
+.vscode/

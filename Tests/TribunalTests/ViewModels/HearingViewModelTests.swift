@@ -53,8 +53,36 @@ final class HearingViewModelTests: XCTestCase {
         await vm.startHearing(claim: "test", model: "gpt-5.4-mini", modelContext: context)
 
         XCTAssertNotNil(vm.error)
-        XCTAssertNil(vm.currentCase, "Failed cases should be deleted from SwiftData")
+        XCTAssertEqual(vm.failureKind, .missingAPIKey)
+        XCTAssertEqual(vm.currentCase?.status, .failed)
+        XCTAssertEqual(vm.currentCase?.rawContent, "test")
+        let storedCases = try context.fetch(FetchDescriptor<Case>())
+        XCTAssertEqual(storedCases.count, 1)
+        XCTAssertEqual(storedCases.first?.status, .failed)
         XCTAssertFalse(vm.isStreaming)
+    }
+
+    func testRetryHearingPreservesFailedCaseAndCreatesNewOne() async throws {
+        let mock = MockLLMProvider()
+        mock.error = OpenAIError.noAPIKey
+        let vm = HearingViewModel(llmProvider: mock)
+        let context = try makeContext()
+
+        await vm.startHearing(claim: "test claim", model: "gpt-5.4-mini", modelContext: context)
+        XCTAssertEqual(vm.currentCase?.status, .failed)
+
+        mock.error = nil
+        mock.events = [.delta(sampleJSON), .done]
+
+        let failedCase = try XCTUnwrap(vm.currentCase)
+        await vm.retryHearing(from: failedCase, modelContext: context)
+
+        let storedCases = try context.fetch(FetchDescriptor<Case>())
+        XCTAssertEqual(storedCases.count, 2)
+        XCTAssertTrue(storedCases.contains { $0.status == .failed })
+        XCTAssertTrue(storedCases.contains { $0.status == .completed })
+        XCTAssertEqual(vm.currentCase?.status, .completed)
+        XCTAssertEqual(vm.currentCase?.claimSummary, "Summary")
     }
 
     func testStartHearingDetectsURLInput() async throws {

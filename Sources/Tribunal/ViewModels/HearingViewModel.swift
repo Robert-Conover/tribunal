@@ -4,10 +4,19 @@ import Combine
 
 @MainActor
 final class HearingViewModel: ObservableObject {
+    enum FailureKind: Equatable {
+        case missingAPIKey
+        case invalidAPIKey
+        case network
+        case api
+        case unknown
+    }
+
     @Published var sectionContent: [HearingSection: String] = [:]
     @Published var activeSection: HearingSection?
     @Published var isStreaming = false
     @Published var error: String?
+    @Published var failureKind: FailureKind?
     @Published var currentCase: Case?
 
     private let llmProvider: any LLMProvider
@@ -27,6 +36,7 @@ final class HearingViewModel: ObservableObject {
         currentCase = newCase
         isStreaming = true
         error = nil
+        failureKind = nil
         accumulatedJSON = ""
         sectionContent = [:]
         activeSection = nil
@@ -49,12 +59,22 @@ final class HearingViewModel: ObservableObject {
             let response = try ResponseParser.parse(accumulatedJSON)
             ResponseParser.applyToCase(response, case: newCase)
         } catch {
-            modelContext.delete(newCase)
-            self.currentCase = nil
+            newCase.rawResponse = accumulatedJSON
+            newCase.status = .failed
+            self.currentCase = newCase
             self.error = error.localizedDescription
+            self.failureKind = classify(error)
         }
 
         isStreaming = false
+    }
+
+    func retryHearing(from hearingCase: Case, modelContext: ModelContext) async {
+        await startHearing(
+            claim: hearingCase.rawContent,
+            model: hearingCase.modelUsed,
+            modelContext: modelContext
+        )
     }
 
     func reset() {
@@ -62,7 +82,23 @@ final class HearingViewModel: ObservableObject {
         sectionContent = [:]
         activeSection = nil
         error = nil
+        failureKind = nil
         accumulatedJSON = ""
+    }
+
+    private func classify(_ error: Error) -> FailureKind {
+        switch error {
+        case OpenAIError.noAPIKey:
+            return .missingAPIKey
+        case OpenAIError.invalidAPIKey:
+            return .invalidAPIKey
+        case OpenAIError.networkError:
+            return .network
+        case OpenAIError.httpError, OpenAIError.streamingError:
+            return .api
+        default:
+            return .unknown
+        }
     }
 
     private func updateSections() {

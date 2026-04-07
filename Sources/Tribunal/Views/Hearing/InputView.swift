@@ -27,6 +27,7 @@ struct InputView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(TribunalTheme.textSecondary.opacity(0.3), lineWidth: 1)
+                            .allowsHitTesting(false)
                     )
                     .frame(minHeight: 100, maxHeight: 200)
                     .focused($isInputFocused)
@@ -52,7 +53,11 @@ struct InputView: View {
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(TribunalTheme.background)
-        .onAppear { isInputFocused = true }
+        .onAppear {
+            DispatchQueue.main.async {
+                isInputFocused = true
+            }
+        }
     }
 
     private func submitClaim() {
