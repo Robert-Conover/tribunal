@@ -74,7 +74,6 @@ struct EvidenceGapCard: View {
                 .lineSpacing(3)
         }
         .padding(12)
-        .background(TribunalTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .tribunalGlassCard()
     }
 }

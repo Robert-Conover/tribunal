@@ -29,7 +29,8 @@ struct SessionView: View {
                 .padding(.vertical, 24)
                 .id("session-bottom")
             }
-            .background(TribunalTheme.background)
+            .tribunalTopScrollEdgeEffect()
+            .navigationTitle("Case \(hearingCase.caseNumber)")
             .onChange(of: viewModel.activeSection) {
                 withAnimation(.easeOut(duration: 0.3)) {
                     proxy.scrollTo("session-bottom", anchor: .bottom)
@@ -39,28 +40,32 @@ struct SessionView: View {
     }
 
     private var caseHeader: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Case \(hearingCase.caseNumber)")
-                .font(.system(size: 12, design: .monospaced))
-                .foregroundStyle(TribunalTheme.textSecondary)
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 10) {
+                SessionMetaChip(
+                    systemImage: "number.square",
+                    text: "Case \(hearingCase.caseNumber)"
+                )
+
+                SessionMetaChip(
+                    systemImage: "calendar",
+                    text: hearingCase.createdAt.formatted(.dateTime.month().day().year().hour().minute())
+                )
+
+                if hearingCase.promptTokens > 0 {
+                    SessionMetaChip(
+                        systemImage: "sparkles.rectangle.stack",
+                        text: "\(hearingCase.promptTokens + hearingCase.completionTokens) tokens"
+                    )
+                }
+            }
+            .tribunalGlassGroup(spacing: 10)
 
             Text(hearingCase.rawContent)
                 .font(.system(size: 18, weight: .medium, design: .serif))
                 .foregroundStyle(TribunalTheme.textPrimary)
                 .lineSpacing(4)
                 .textSelection(.enabled)
-
-            HStack(spacing: 12) {
-                Text(hearingCase.createdAt, format: .dateTime.month().day().year().hour().minute())
-                    .font(.system(size: 12))
-                    .foregroundStyle(TribunalTheme.textSecondary)
-
-                if hearingCase.promptTokens > 0 {
-                    Text("\(hearingCase.promptTokens + hearingCase.completionTokens) tokens")
-                        .font(.system(size: 12))
-                        .foregroundStyle(TribunalTheme.textSecondary)
-                }
-            }
         }
         .padding(.horizontal, 24)
     }
@@ -140,7 +145,7 @@ struct SessionView: View {
             Button("Retry Hearing") {
                 retryHearing()
             }
-            .buttonStyle(.borderedProminent)
+            .tribunalPrimaryButtonStyle()
             .tint(TribunalTheme.accent)
         }
         .frame(maxWidth: .infinity)
@@ -180,5 +185,19 @@ struct SessionView: View {
         Task {
             await viewModel.retryHearing(from: hearingCase, modelContext: modelContext)
         }
+    }
+}
+
+private struct SessionMetaChip: View {
+    let systemImage: String
+    let text: String
+
+    var body: some View {
+        Label(text, systemImage: systemImage)
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(TribunalTheme.textSecondary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .tribunalGlassCard()
     }
 }

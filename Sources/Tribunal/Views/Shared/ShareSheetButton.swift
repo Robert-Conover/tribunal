@@ -13,7 +13,7 @@ struct ShareSheetButton<Label: View>: View {
         ShareLink(item: item) {
             label()
         }
-        .buttonStyle(.plain)
-        .foregroundStyle(TribunalTheme.accent)
+        .tribunalSecondaryButtonStyle()
+        .tint(TribunalTheme.accent)
     }
 }

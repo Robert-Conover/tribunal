@@ -72,8 +72,8 @@ struct VerdictCardView: View {
                             .padding(.leading, 12)
                             .padding(.vertical, 10)
                         }
-                        .background(TribunalTheme.defenseMarker.opacity(0.05))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .padding(10)
+                        .tribunalGlassCard()
                     }
                 }
 
@@ -89,6 +89,7 @@ struct VerdictCardView: View {
                     }
                 }
                 .padding(.top, 8)
+                .tribunalGlassGroup(spacing: 16)
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
@@ -147,9 +148,9 @@ struct CopyButton: View {
                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
                 Text(copied ? "Copied" : label)
             }
-            .font(.system(size: 12))
+            .font(.system(size: 12, weight: .medium))
         }
-        .buttonStyle(.plain)
-        .foregroundStyle(TribunalTheme.accent)
+        .tribunalSecondaryButtonStyle()
+        .tint(copied ? TribunalTheme.verdictSupported : TribunalTheme.accent)
     }
 }
