@@ -6,7 +6,7 @@ struct InputView: View {
     let onSubmit: (String) -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 28) {
             Spacer()
 
             Text("Tribunal")
@@ -17,42 +17,47 @@ struct InputView: View {
                 .font(.system(size: 14))
                 .foregroundStyle(TribunalTheme.textSecondary)
 
-            VStack(spacing: 12) {
-                TextEditor(text: $claimText)
-                    .font(.system(size: 14))
-                    .scrollContentBackground(.hidden)
-                    .padding(12)
-                    .background(TribunalTheme.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(TribunalTheme.textSecondary.opacity(0.3), lineWidth: 1)
-                            .allowsHitTesting(false)
-                    )
-                    .frame(minHeight: 100, maxHeight: 200)
-                    .focused($isInputFocused)
+            VStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack {
+                        Label("Case Intake", systemImage: "text.quote")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(TribunalTheme.textSecondary)
+
+                        Spacer()
+
+                        Text("Command-Return")
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundStyle(TribunalTheme.textSecondary)
+                    }
+
+                    TextEditor(text: $claimText)
+                        .font(.system(size: 15))
+                        .scrollContentBackground(.hidden)
+                        .frame(minHeight: 130, maxHeight: 240)
+                        .focused($isInputFocused)
+                }
+                .padding(20)
+                .tribunalGlassCard(interactive: true)
 
                 Button(action: submitClaim) {
-                    HStack(spacing: 6) {
-                        Text("Open Hearing")
-                        Text("\u{2318}\u{21A9}")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(minWidth: 160)
+                    Label("Open Hearing", systemImage: "arrow.up.forward.app")
+                        .frame(minWidth: 180)
                 }
-                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .tribunalPrimaryButtonStyle()
                 .tint(TribunalTheme.accent)
                 .disabled(claimText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 .keyboardShortcut(.return, modifiers: .command)
             }
             .frame(maxWidth: 600)
+            .tribunalGlassGroup(spacing: 14)
 
             Spacer()
         }
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TribunalTheme.background)
+        .navigationTitle("New Hearing")
         .onAppear {
             DispatchQueue.main.async {
                 isInputFocused = true

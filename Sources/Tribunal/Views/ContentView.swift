@@ -10,6 +10,7 @@ struct ContentView: View {
     @StateObject private var libraryVM = CaseLibraryViewModel()
     @State private var selectedCaseID: UUID?
     @State private var showSettings = false
+    @State private var caseSearchText = ""
 
     init(llmProvider: any LLMProvider) {
         _hearingVM = StateObject(wrappedValue: HearingViewModel(llmProvider: llmProvider))
@@ -22,20 +23,24 @@ struct ContentView: View {
         return hearingVM.currentCase
     }
 
+    private var filteredCases: [Case] {
+        let query = caseSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return cases }
+
+        return cases.filter { hearingCase in
+            hearingCase.caseNumber.localizedCaseInsensitiveContains(query) ||
+            hearingCase.rawContent.localizedCaseInsensitiveContains(query) ||
+            hearingCase.claimSummary.localizedCaseInsensitiveContains(query) ||
+            hearingCase.verdictSummary.localizedCaseInsensitiveContains(query)
+        }
+    }
+
     var body: some View {
         NavigationSplitView {
             SidebarView(
-                cases: cases,
+                cases: filteredCases,
+                searchText: caseSearchText,
                 selectedCaseID: $selectedCaseID,
-                onNewHearing: {
-                    showSettings = false
-                    selectedCaseID = nil
-                    hearingVM.reset()
-                },
-                onShowSettings: {
-                    showSettings = true
-                    selectedCaseID = nil
-                },
                 onDelete: { hearingCase in
                     libraryVM.deleteCase(hearingCase, modelContext: modelContext)
                     if selectedCaseID == hearingCase.id {
@@ -59,7 +64,7 @@ struct ContentView: View {
             } else {
                 InputView { claim in
                     guard settings.apiKey != nil else {
-                        showSettings = true
+                        openSettings()
                         return
                     }
                     showSettings = false
@@ -74,6 +79,29 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 800, minHeight: 600)
+        .searchable(text: $caseSearchText, prompt: "Search cases")
+        .tribunalSearchToolbarBehavior()
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    startNewHearing()
+                } label: {
+                    Label("New Hearing", systemImage: "plus")
+                }
+            }
+
+            if #available(macOS 26.0, *) {
+                ToolbarSpacer(.flexible, placement: .automatic)
+            }
+
+            ToolbarItem(placement: .automatic) {
+                Button {
+                    openSettings()
+                } label: {
+                    Label("Settings", systemImage: "gearshape")
+                }
+            }
+        }
         .preferredColorScheme(colorScheme)
         .onChange(of: selectedCaseID) {
             if selectedCaseID != nil {
@@ -81,9 +109,7 @@ struct ContentView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .newHearing)) { _ in
-            showSettings = false
-            selectedCaseID = nil
-            hearingVM.reset()
+            startNewHearing()
         }
     }
 
@@ -93,5 +119,16 @@ struct ContentView: View {
         case .light: .light
         case .system: nil
         }
+    }
+
+    private func startNewHearing() {
+        showSettings = false
+        selectedCaseID = nil
+        hearingVM.reset()
+    }
+
+    private func openSettings() {
+        showSettings = true
+        selectedCaseID = nil
     }
 }
